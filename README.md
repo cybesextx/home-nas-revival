@@ -22,8 +22,10 @@ I did not remember the admin password, so I couldn’t log in or make system cha
 2. **Drop to Root Shell:**
    - Chose the "root – Drop to root shell prompt" option.
 3. **Remount the Filesystem as Writable:**
-mount -o remount,rw/
-4. **Reset the Password:**
+```
+   mount -o remount,rw/
+```
+5. **Reset the Password:**
 - Listed users with:
   ```
   ls /home
@@ -34,8 +36,9 @@ mount -o remount,rw/
   ```
 - Entered a new password when prompted.
 5. **Rebooted:**
+```
 reboot
-
+```
 6. **Logged in successfully with the new password!**
 
 ---
@@ -71,7 +74,9 @@ output default cannot use rotation "right" reflection "none"
  - Saved and closed the file.
 
 3. **Restarted GDM3 or Rebooted:**
- sudo reboot
+ ```
+sudo reboot
+```
 
 4. **Result:**
 - System booted into Xorg.
