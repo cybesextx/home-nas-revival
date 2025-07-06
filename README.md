@@ -10,6 +10,7 @@ troubleshooting display issues, and preparing for backup tasks.
 - [Lessons Learned](#lessons-learned)
 - [SSH Setup and Remote Access](#ssh-setup-and-remote-access)
 - [Samba Share Access and User Profile Setup](#samba-share-access-and-user-profile-setup)
+-  [Firewall Configuration, Automated Backups, and Email Notifications](#firewall-configuration-automated-backups-and-email-notifications)
 - [Next Steps](#next-steps)
 
 ## Password Reset Process
@@ -278,13 +279,86 @@ Enable file sharing between the Ubuntu NAS and a Windows PC using Samba, and res
 - **Pinning or mapping the share** streamlines workflow and makes the NAS feel like a local drive.
 - **Permissions and access control** are essential for both usability and security.
 
+## Firewall Configuration, Automated Backups, and Email Notifications
+
+### Firewall Setup
+
+To secure the NAS and limit access to only required services, I installed and configured UFW (Uncomplicated Firewall):
+
+```
+sudo apt update
+sudo apt install ufw
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow ssh
+sudo ufw allow samba
+sudo ufw enable
+sudo ufw status verbose
+```
+
+- **SSH and Samba** are allowed so I can manage the server remotely and access shared files from my other devices.
+- All other incoming connections are denied by default for security.
+
+---
+
+### Automated Backups
+
+To ensure important data is regularly saved, I created a backup script and scheduled it with cron:
+
+**Backup script example (`backup.sh`):**
+```
+#!/bin/bash
+
+SOURCE="/home/yourusername/Documents/"
+DEST="/srv/samba/share/backup/"
+
+mkdir -p "$DEST"
+rsync -aAX --delete "$SOURCE" "$DEST"
+
+echo "Backup completed at $(date)" | mail -s "NAS Backup Complete" your@email.com
+```
+Add a line to run the backup daily at a time when the NAS is idle (example: 10:30 AM):
+```
+30 10 * * * /home/yourusername/backup.sh
+
+```
+
+- The script uses `rsync` to copy files from the source to the backup directory.
+- The `--delete` flag ensures the backup mirror matches the source.
+- After completion, the script sends an email notification.
+
+**Scheduling with cron:**
+```
+crontab -e
+
+```
 
 
+---
+
+### Automated Email Notifications
+
+- Installed `mailutils` to enable sending emails from the server:
+```
+sudo apt install mailutils
+```
+
+
+- The backup script sends an email upon completion, so I’m immediately notified of backup status.
+
+---
+
+### Lessons Learned
+
+- Enabling and configuring a firewall is essential for securing any server exposed to a network.
+- Automating backups with `rsync` and cron ensures data is protected without manual intervention.
+- Email notifications provide peace of mind and immediate feedback if something goes wrong.
+- Scheduling backups during idle hours avoids performance issues during active use.
+
+---
 
 ## Next Steps
 
-- Set up backup scripts to regularly save important documents and data.
-- Secure the NAS with strong passwords and regular software updates.
 - Plan for offsite or cloud backups for redundancy.
 - Continue documenting any new configurations, scripts, or troubleshooting steps as the project evolves.
 
@@ -304,6 +378,11 @@ Enable file sharing between the Ubuntu NAS and a Windows PC using Samba, and res
 - [Pimylifeup: Setting up a Simple NAS On Ubuntu using Samba](https://pimylifeup.com/ubuntu-nas/)[5]
 - [PhoenixNAP: How to Install Samba on Ubuntu](https://phoenixnap.com/kb/ubuntu-samba)[3]
 - [Ubuntu Community Help Wiki: Samba](https://help.ubuntu.com/community/Samba)
+- [How to use Markdown for writing documentation - Adobe](https://experienceleague.adobe.com/en/docs/contributor/contributor-guide/writing-essentials/markdown)[3]
+- [Getting Started | Markdown Guide](https://www.markdownguide.org/getting-started/)[2]
+- [UFW Essentials: Common Firewall Rules and Commands](https://help.ubuntu.com/community/UFW)
+- [Automating Backups with rsync and cron](https://www.digitalocean.com/community/tutorials/how-to-use-rsync-to-sync-local-and-remote-directories-on-a-vps)
+- [Mailutils Documentation](https://mailutils.org/docs.html)
   
 
 ---
